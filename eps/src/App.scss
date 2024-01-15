@@ -1,0 +1,93 @@
+
+@import "carbon-components/scss/globals/scss/vendor/@carbon/elements/scss/themes/theme-maps";
+$carbon--theme: $carbon--theme--g10;
+@import 'carbon-components/scss/globals/scss/styles';
+@import '@carbon/ibm-products/scss/index-without-carbon.scss';
+
+// @import 'carbon-components/scss/globals/scss/vendor/@carbon/type/scss/font-family.scss';
+// @import 'carbon-components/scss/globals/scss/vendor/@carbon/layout/scss/breakpoint.scss';
+// @import 'carbon-components/scss/globals/scss/typography.scss';
+// @import 'carbon-components/scss/globals/scss/vars.scss';
+// @import 'carbon-components/scss/globals/grid/grid';
+
+
+
+.App {
+  text-align: center;
+  min-height: 100vh;
+  // background-color: $background;
+}
+
+
+.App-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  // color: $text-01;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+/* */
+/* */
+/* */
+
+.panel-wrapper {
+  display: flex;
+  flex-direction: column;
+  margin-left: -15rem;
+
+  .panel-row {
+    display: flex;
+    flex-direction: row;
+
+    .differential-wrapper {
+      display: flex;
+      flex-basis: 8rem !important;
+    }
+
+    .panel-cell {
+      flex-direction: column;
+      background-color: antiquewhite;
+      /* width: 50px;*/
+      display: flex;
+      flex-grow: 0;
+      flex-shrink: 0;
+      flex-basis: 4rem;
+      height: 150px;
+      color: black;
+      margin-right: 5px;
+      margin-bottom: 5px;
+      overflow: auto;
+
+      .cds--overflow-menu__wrapper {
+        span.cds--popover {
+          display: none;
+        }
+      }
+
+      .overflow-menu-wrapper svg {
+        padding: 0;
+      }
+    }
+  }
+}
+
+
+.cds--overflow-menu-options {
+  &, & > li, & > li> button {
+    display: flex;
+    flex: 1 1 auto;
+  }
+  flex-direction: column;
+}
+
+
+
+.bx--btn .bx--btn__icon {
+  right: 0;
+}

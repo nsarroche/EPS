@@ -1,0 +1,97 @@
+{
+  "parser":  "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint",
+    "unused-imports"
+  ],
+  "extends":  [
+    "airbnb",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/typescript",
+    "plugin:react/recommended"
+  ],
+  "parserOptions":  {
+    "project": "./tsconfig.json"
+  },
+  "env": {
+    "browser": true,
+    "jest": true,
+    "jasmine": true
+  },
+  "rules":  {
+    "linebreak-style": 0, // because of windows
+    "camelcase": "off",
+    "ban-ts-comment": "off", // we have some @ts-ignore
+    "@typescript-eslint/ban-ts-comment": "off", // we have some @ts-ignore
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "no-shadow": "off",
+    "react/require-default-props": "off",
+    "no-plusplus": "off",
+    "implicit-arrow-linebreak": "off",
+    "comma-dangle": "off", // because it's very ugly and just useless
+    "no-use-before-define": "off", // there's nothing wrong in ordering code as you want, and have e.g. utility functions at the end of a file...
+    "@typescript-eslint/no-use-before-define": [ "off" ],
+    "new-cap": ["off"],
+    "max-len": ["error", {"code": 120, "ignoreStrings": true}], // Increase line length
+    "default-case": "off", // Do not need to add default case in switch statement
+    "consistent-return": "off", // Mainly due to the "default-case" rule
+    "prefer-destructuring": "off", // unnecessary pollution
+    "import/no-cycle": 0, // We probably dont want to exclude this rule...
+    "import/no-extraneous-dependencies": 0, // We allow import from module that are not included in package.json
+    "import/no-unresolved": [2],
+    "react/prop-types": 0, // We probably dont want to exclude this rule...
+    "react/display-name": [ "off" ],
+    "no-underscore-dangle": "off", // Allowing usage of '_'
+    "@typescript-eslint/camelcase": ["off"],
+    "@typescript-eslint/indent": ["error", 2], // Indentation with 2 spaces
+    "@typescript-eslint/array-type": "off",
+    "@typescript-eslint/explicit-member-accessibility": "off",
+    "@typescript-eslint/no-non-null-assertion": "off", // https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/anchor-is-valid.md
+    "@typescript-eslint/no-object-literal-type-assertion": "off", // Allowing usage of 'as'
+    "import/named": "off", // Buggy import * as ...
+    "import/prefer-default-export": "off", // Allowing single Named-export
+    "react/jsx-filename-extension": ["warn", {"extensions": [".tsx"]}], // TypeScript so...
+    "react/destructuring-assignment": "off", // not really useful and much more verbose in some cases
+    "react/jsx-key": [ "off" ], // because it believes that Maybe.map is some kind of iteration
+    "react/prefer-stateless-function": [ "warn" ], // because we have stateful things eg BomEditor2
+    "react/no-multi-comp": [ "off" ], // We have many files with several components in them
+    "@typescript-eslint/explicit-function-return-type": "off", // Annoying to force return type
+    "@typescript-eslint/no-inferrable-types": "off",
+    "jsx-a11y/anchor-is-valid": 1, // We probably dont want to exclude this rule...
+    "jsx-a11y/label-has-associated-control": 1,
+    "jsx-a11y/label-has-for": 1,
+    "jsx-a11y/control-has-associated-label": [
+      1,
+      {
+        "ignoreElements": [ "th" ]
+      }
+    ],
+    "import/extensions": 0,
+    "react/jsx-no-bind": [
+      1,
+      {
+        "allowArrowFunctions": true,
+        "allowFunctions": true
+      }
+    ],
+    "react/no-unstable-nested-components": [ // Allowing renderProps
+      1,
+      {
+        "allowAsProps": true
+      }
+    ],
+    "react/jsx-no-useless-fragment": "off", // Allows return of <></>
+    "max-classes-per-file": "off", // Disable one class per ts file
+    "react/jsx-props-no-spreading": "off", // Allowing props spread (<Comp {...props} />
+    "no-mixed-operators": "off", // Do not require parenthesis on math
+    "prefer-regex-literals": "off", // Allows new Regex(...)
+    "default-case-last": "off", // Allows switch default case to be anywhere
+    "no-misleading-character-class": "off", // Allows unicode notation
+    "no-promise-executor-return": "off", // Allows return in promise
+    "react/no-unused-class-component-methods": "off", // Looks broken, allows to use value in components
+    "func-names": [ 1, "as-needed" ],
+    "react/no-unused-prop-types": "off",
+    "unused-imports/no-unused-imports": "error"
+  }
+}
