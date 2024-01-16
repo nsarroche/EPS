@@ -5,7 +5,7 @@ import {
   Dispatcher, just, nothing, Sub
 } from 'tea-cup-core';
 import {
-  Button, ContentSwitcher, OverflowMenu, OverflowMenuItem, Switch, TooltipIcon
+  Button, ContentSwitcher, OverflowMenu, OverflowMenuItem, Switch, TextInput, TooltipIcon
 } from 'carbon-components-react';
 import { Add16, Edit16, Warning16 } from '@carbon/icons-react';
 import {
@@ -22,11 +22,14 @@ function view(dispatch:Dispatcher<Msg>, model: Model) {
   return (
     <div className="App">
       <header className="App-header">
-        {DisplayRowCounter(dispatch, model)}
-        {DisplayRadio(dispatch, model)}
-        {DisplayPanel(dispatch, model)}
-        {DisplaySidePanel(dispatch, model)}
+        <h2>Electric Panel Simulator</h2>
       </header>
+      <div className="panel-config-row">
+        {DisplayRowCounter(dispatch, model)}
+        {DisplayRowWidth(dispatch, model)}
+      </div>
+      {DisplayPanel(dispatch, model)}
+      {DisplaySidePanel(dispatch, model)}
     </div>
   );
 }
@@ -39,7 +42,7 @@ function DisplayPanel(
     <div className="panel-wrapper">
       {
         model.panelRows.map((row, rowIndex) => (
-          <div className="panel-row">
+          <div className="panel-row" style={{ width: model.panelWidth * (64 + 10) }}>
             {
               row.items.map((r, itemIndex) => DisplayRowItem(r, rowIndex, itemIndex, model, dispatch))
             }
@@ -95,29 +98,32 @@ function DisplayRowItem(
   model: Model,
   dispatch: Dispatcher<Msg>
 ) {
+  const isSelected = model.rightPanelState.rowIndex === rowIndex && model.rightPanelState.itemIndex === itemIndex;
   if (panelItem.kind === 'DIFFERENTIAL') {
+    const e = findError(model.errorMsgs, rowIndex, itemIndex);
     return (
-      <div className="panel-cell differential-wrapper">
+      <div className={`panel-cell differential-wrapper ${e ? 'error-cell' : ''} ${isSelected ? 'selected-cell' : ''}`}>
         <div>{panelItem.type}</div>
         <div>
           {panelItem.value}
           A
         </div>
         {renderOpenSidePanelButton(dispatch, panelItem, rowIndex, itemIndex)}
-        {renderErrorMsg(model.errorMsgs, rowIndex, itemIndex)}
+        {renderErrorMsg(e)}
       </div>
     );
   }
   if (panelItem.kind === 'CIRCUIT_BREAKER') {
+    const e = findError(model.errorMsgs, rowIndex, itemIndex);
     return (
-      <div className="panel-cell">
-        <div>_</div>
+      <div className={`panel-cell ${e ? 'error-cell' : ''} ${isSelected ? 'selected-cell' : ''}`}>
+        <div className="panel-cell-empty-name" />
         <div>
           {panelItem.value}
           A
         </div>
         {renderOpenSidePanelButton(dispatch, panelItem, rowIndex, itemIndex)}
-        {renderErrorMsg(model.errorMsgs, rowIndex, itemIndex)}
+        {renderErrorMsg(e)}
       </div>
     );
   }
@@ -151,6 +157,7 @@ function renderOpenSidePanelButton(
       hasIconOnly
       renderIcon={Edit16}
       kind="ghost"
+      className="open-side-panel-button"
       onClick={() => dispatch(
         {
           kind: 'openOrClosePanel',
@@ -163,17 +170,21 @@ function renderOpenSidePanelButton(
   );
 }
 
-function renderErrorMsg(
+function findError(
   errors: ErrorMsg[],
   rowIndex: number,
   itemIndex: number
 ) {
-  const err = errors.find((e) => e.rowIndex === rowIndex && e.itemIndex === itemIndex);
-  return err
+  return errors.find((e) => e.rowIndex === rowIndex && e.itemIndex === itemIndex);
+}
+
+function renderErrorMsg(error: ErrorMsg | undefined) {
+  return error
     ? (
       <TooltipIcon
         align="center"
-        tooltipText={err.message}
+        tooltipText={error.message}
+        className="error-message-tooltip"
       >
         <Warning16 />
       </TooltipIcon>
@@ -183,19 +194,21 @@ function renderErrorMsg(
 
 function DisplayRowCounter(dispatch:Dispatcher<Msg>, model: Model) {
   return (
-    <form>
-      <input
+    <div className="panel-config-height-input-wrapper">
+      <TextInput
         value={model.panelRows.length}
         type="number"
         min={1}
         max={5}
         onChange={(evt) => dispatch({ kind: 'updateHeight', size: Number(evt.target.value) })}
+        id="row-counter"
+        labelText="Hauteur du tableau"
       />
-    </form>
+    </div>
   );
 }
 
-function DisplayRadio(dispatch:Dispatcher<Msg>, model: Model) {
+function DisplayRowWidth(dispatch:Dispatcher<Msg>, model: Model) {
   return (
     <div className="panel-width-content-switcher-wrapper">
       <ContentSwitcher
@@ -204,16 +217,15 @@ function DisplayRadio(dispatch:Dispatcher<Msg>, model: Model) {
       >
         <Switch
           name="13"
-          text="13"
+          text="13 modules"
           value={13}
         />
         <Switch
           name="18"
           value={18}
-          text="18"
+          text="18 modules"
         />
       </ContentSwitcher>
-
     </div>
   );
 }

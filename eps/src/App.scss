@@ -15,7 +15,10 @@ $carbon--theme: $carbon--theme--g10;
 .App {
   text-align: center;
   min-height: 100vh;
-  // background-color: $background;
+  background-color: $background;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 
@@ -36,10 +39,23 @@ $carbon--theme: $carbon--theme--g10;
 /* */
 /* */
 
+.panel-config-row {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: $spacing-05;
+  align-self: center;
+  align-items: end;
+
+  .panel-config-height-input-wrapper {
+    margin-right: $spacing-05;
+  }
+}
+
 .panel-wrapper {
   display: flex;
   flex-direction: column;
-  margin-left: -15rem;
+  width: 100%;
+  align-items: center;
 
   .panel-row {
     display: flex;
@@ -61,9 +77,13 @@ $carbon--theme: $carbon--theme--g10;
       flex-basis: 4rem;
       height: 150px;
       color: black;
-      margin-right: 5px;
-      margin-bottom: 5px;
-      overflow: auto;
+      margin-right: 6px;
+      margin-bottom: 6px;
+      padding-top: 16px;
+
+      &.selected-cell {
+        outline: 2px solid $interactive;
+      }
 
       .cds--overflow-menu__wrapper {
         span.cds--popover {
@@ -74,10 +94,21 @@ $carbon--theme: $carbon--theme--g10;
       .overflow-menu-wrapper svg {
         padding: 0;
       }
+
+      &.error-cell {
+        border: 1px solid $text-error;
+      }
+
+      .panel-cell-empty-name {
+        height: $spacing-07;
+      }
+
+      .open-side-panel-button .bx--assistive-text, .open-side-panel-button::before {
+        display: none;
+      }
     }
   }
 }
-
 
 .cds--overflow-menu-options {
   &, & > li, & > li> button {
@@ -87,12 +118,16 @@ $carbon--theme: $carbon--theme--g10;
   flex-direction: column;
 }
 
-
-
 .bx--btn .bx--btn__icon {
   right: 0;
+  margin: 0;
 }
 
 .panel-width-content-switcher-wrapper {
-  width: 200px;
+  width: 300px;
+}
+
+.error-message-tooltip {
+  display: flex;
+  align-self: center;
 }
