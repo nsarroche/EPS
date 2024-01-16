@@ -1,15 +1,17 @@
 import React from 'react';
 import './App.scss';
 import { Program } from 'react-tea-cup';
-import { Dispatcher, just, Sub } from 'tea-cup-core';
 import {
-  Button, OverflowMenu, OverflowMenuItem
+  Dispatcher, just, nothing, Sub
+} from 'tea-cup-core';
+import {
+  Button, ContentSwitcher, OverflowMenu, OverflowMenuItem, Switch, TooltipIcon
 } from 'carbon-components-react';
-import { Add16, Edit16 } from '@carbon/icons-react';
+import { Add16, Edit16, Warning16 } from '@carbon/icons-react';
 import {
   CircuitBreakerSize,
   DifferentialSize,
-  DifferentialType,
+  DifferentialType, ErrorMsg,
   Model,
   PanelItem
 } from './Model';
@@ -61,9 +63,10 @@ function defaultDifferential(value: DifferentialSize, diffType: DifferentialType
 function defaultCircuitBreaker(value: CircuitBreakerSize): PanelItem {
   return {
     kind: 'CIRCUIT_BREAKER',
-    name: 'UPDATE ME',
+    name: 'Nouveau nom',
     value,
-    size: 1
+    size: 1,
+    isSpecific: nothing
   };
 }
 
@@ -100,29 +103,21 @@ function DisplayRowItem(
           {panelItem.value}
           A
         </div>
+        {renderOpenSidePanelButton(dispatch, panelItem, rowIndex, itemIndex)}
+        {renderErrorMsg(model.errorMsgs, rowIndex, itemIndex)}
       </div>
     );
   }
   if (panelItem.kind === 'CIRCUIT_BREAKER') {
     return (
       <div className="panel-cell">
+        <div>_</div>
         <div>
           {panelItem.value}
           A
         </div>
-        <Button
-          hasIconOnly
-          renderIcon={Edit16}
-          kind="ghost"
-          onClick={() => dispatch(
-            {
-              kind: 'openOrClosePanel',
-              item: just(panelItem),
-              rowIndex,
-              itemIndex
-            }
-          )}
-        />
+        {renderOpenSidePanelButton(dispatch, panelItem, rowIndex, itemIndex)}
+        {renderErrorMsg(model.errorMsgs, rowIndex, itemIndex)}
       </div>
     );
   }
@@ -145,6 +140,47 @@ function DisplayRowItem(
   );
 }
 
+function renderOpenSidePanelButton(
+  dispatch: Dispatcher<Msg>,
+  panelItem: PanelItem,
+  rowIndex: number,
+  itemIndex: number
+) {
+  return (
+    <Button
+      hasIconOnly
+      renderIcon={Edit16}
+      kind="ghost"
+      onClick={() => dispatch(
+        {
+          kind: 'openOrClosePanel',
+          item: just(panelItem),
+          rowIndex,
+          itemIndex
+        }
+      )}
+    />
+  );
+}
+
+function renderErrorMsg(
+  errors: ErrorMsg[],
+  rowIndex: number,
+  itemIndex: number
+) {
+  const err = errors.find((e) => e.rowIndex === rowIndex && e.itemIndex === itemIndex);
+  return err
+    ? (
+      <TooltipIcon
+        align="center"
+        tooltipText={err.message}
+      >
+        <Warning16 />
+      </TooltipIcon>
+    )
+    : <></>;
+}
+
 function DisplayRowCounter(dispatch:Dispatcher<Msg>, model: Model) {
   return (
     <form>
@@ -161,20 +197,24 @@ function DisplayRowCounter(dispatch:Dispatcher<Msg>, model: Model) {
 
 function DisplayRadio(dispatch:Dispatcher<Msg>, model: Model) {
   return (
-    <form>
-      <div className="radio">
-        <label>
-          <input type="radio" value="13" checked={model.panelWidth === 13} onChange={() => dispatch({ kind: 'updateWidth', size: 13 })} />
-          13 Modules
-        </label>
-      </div>
-      <div className="radio">
-        <label>
-          <input type="radio" value="18" checked={model.panelWidth === 18} onChange={() => dispatch({ kind: 'updateWidth', size: 18 })} />
-          18 Modules
-        </label>
-      </div>
-    </form>
+    <div className="panel-width-content-switcher-wrapper">
+      <ContentSwitcher
+        onChange={(v) => dispatch({ kind: 'updateWidth', size: (v.name as number) })}
+        selectedIndex={model.panelWidth === 13 ? 0 : 1}
+      >
+        <Switch
+          name="13"
+          text="13"
+          value={13}
+        />
+        <Switch
+          name="18"
+          value={18}
+          text="18"
+        />
+      </ContentSwitcher>
+
+    </div>
   );
 }
 

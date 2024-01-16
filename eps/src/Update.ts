@@ -1,7 +1,9 @@
 import {
-  Cmd, Maybe, noCmd, nothing
+  Cmd, just, Maybe, noCmd, nothing
 } from 'tea-cup-core';
 import {
+  CircuitBreaker,
+  ErrorMsg,
   Model, NONE, PanelItem, PanelRow
 } from './Model';
 import { PanelState } from './SidePanel/SidePanelModel';
@@ -20,6 +22,7 @@ export type Msg
     | { kind: 'updateHeight', size: number}
     | { kind: 'updateItem', item: PanelItem, rowIndex: number, itemIndex: number}
     | { kind: 'openOrClosePanel', item: Maybe<PanelItem>, rowIndex: number, itemIndex: number}
+    | { kind: 'updatePanelState', item: Maybe<PanelItem>, editItemName: Maybe<string>, rowIndex: number, itemIndex: number}
 
 const emptyRow: PanelRow = {
   items: Array.from(Array(12).keys()).map((value, index) => (index === 0 ? ({
@@ -33,7 +36,8 @@ const emptyRow: PanelRow = {
 export const defaultRightPanelState: PanelState = {
   panelItem: nothing,
   itemIndex: -1,
-  rowIndex: -1
+  rowIndex: -1,
+  editItemName: nothing,
 };
 
 export function initState(): [Model, Cmd<Msg>] {
@@ -97,23 +101,69 @@ export function update(msg: Msg, model: Model) : [Model, Cmd<Msg>] {
       });
     }
     case 'updateItem': {
+      const newRows = model.panelRows.map((r, ri) => (ri === msg.rowIndex ? ({
+        ...r,
+        items: r.items.map((panelItem, panelItemIndex) => (panelItemIndex === msg.itemIndex ? msg.item : panelItem))
+      }) : r));
+      const errors: ErrorMsg[] = newRows.flatMap((row, rowIndex) => row.items.flatMap((item, itemIndex) => {
+        if (item.kind === 'DIFFERENTIAL') {
+          const errs : CircuitBreaker[] = [];
+          for (let i = itemIndex + 1; i < row.items.length - 1; i++) {
+            if (row.items[i].kind !== 'CIRCUIT_BREAKER') {
+              break;
+            }
+            errs.push(row.items[i] as CircuitBreaker);
+          }
+          const sum = item.type === 'A'
+            ? errs.map((item) => item.value as number).reduce((a, b) => a + b, 0)
+            : errs.map((item) => (item.isSpecific.isNothing() ? Math.ceil(item.value / 2) : item.value) as number)
+              .reduce((a, b) => a + b, 0);
+          if (sum >= item.value) {
+            return [{
+              message: `La somme des disjoncteurs (${sum}A) dépasse la puissance du différentiel (${item.value}A)`,
+              rowIndex,
+              itemIndex,
+            }];
+          }
+          return [];
+        }
+        if (item.kind === 'CIRCUIT_BREAKER' && row.items[itemIndex - 1] !== undefined && row.items[itemIndex - 1].kind === 'NONE') {
+          return [{
+            message: 'Ne doit pas être isolé',
+            rowIndex,
+            itemIndex,
+          }];
+        }
+        return [];
+      }));
       return noCmd({
         ...model,
-        panelRows: model.panelRows.map((r, ri) => (ri === msg.rowIndex ? ({
-          ...r,
-          items: r.items.map((panelItem, panelItemIndex) => (panelItemIndex === msg.itemIndex ? msg.item : panelItem))
-        }) : r))
+        panelRows: newRows,
+        errorMsgs: errors,
+        rightPanelState: msg.item.kind === 'NONE' ? defaultRightPanelState : model.rightPanelState
       });
     }
     case 'openOrClosePanel': {
       return noCmd({
         ...model,
         rightPanelState: {
-
           ...model.rightPanelState,
           rowIndex: msg.rowIndex,
           itemIndex: msg.itemIndex,
-          panelItem: msg.item
+          panelItem: msg.item,
+          editItemName: msg.item
+            .map((item) => (item.kind === 'CIRCUIT_BREAKER' ? just(item.name) : nothing))
+            .withDefault(nothing)
+        }
+      });
+    }
+    case 'updatePanelState': {
+      return noCmd({
+        ...model,
+        rightPanelState: {
+          ...model.rightPanelState,
+          panelItem: msg.item,
+          editItemName: msg.editItemName
         }
       });
     }

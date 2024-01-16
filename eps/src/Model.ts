@@ -1,3 +1,4 @@
+import { Maybe } from 'tea-cup-core';
 import { PanelState } from './SidePanel/SidePanelModel';
 
 export interface Model {
@@ -16,6 +17,7 @@ export type DifferentialSize = 40 | 63
 
 export type PanelItem = Differential | CircuitBreaker | None
 export type DifferentialType = 'A' | 'AC'
+export type CircuitBreakerSpecific = 'HEATING' | 'WATER_HEATER'
 
 export interface None {
   kind: 'NONE'
@@ -34,6 +36,7 @@ export interface CircuitBreaker {
   value: CircuitBreakerSize
   name: string
   size: 1
+  isSpecific: Maybe<CircuitBreakerSpecific>
 }
 
 export const NONE: None = {

@@ -53,7 +53,8 @@ $carbon--theme: $carbon--theme--g10;
     .panel-cell {
       flex-direction: column;
       background-color: antiquewhite;
-      /* width: 50px;*/
+      flex-wrap: wrap;
+      align-content: center;
       display: flex;
       flex-grow: 0;
       flex-shrink: 0;
@@ -90,4 +91,8 @@ $carbon--theme: $carbon--theme--g10;
 
 .bx--btn .bx--btn__icon {
   right: 0;
+}
+
+.panel-width-content-switcher-wrapper {
+  width: 200px;
 }
