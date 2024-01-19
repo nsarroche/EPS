@@ -8,8 +8,9 @@ import {
 import React from 'react';
 import { TrashCan16 } from '@carbon/icons-react';
 import {
+  CircuitBreaker,
   CircuitBreakerSize,
-  CircuitBreakerSpecific, DifferentialSize, Model, NONE, PanelItem
+  CircuitBreakerSpecific, Differential, DifferentialSize, Model, NONE, PanelItem
 } from '../Model';
 import { defaultRightPanelState, Msg } from '../Update';
 
@@ -67,69 +68,56 @@ function renderSidePanelItemContent(
         />
       </div>
       <div>
-        {renderSidePanelItemInputOrTitle(dispatch, item, editItemName, rowIndex, itemIndex)}
+        {item.kind === 'DIFFERENTIAL'
+          ? renderDifferentialContent(dispatch, item, rowIndex, itemIndex)
+          : (<></>)}
+        {item.kind === 'CIRCUIT_BREAKER'
+          ? renderCircuitBreakerContent(dispatch, item as CircuitBreaker, editItemName, rowIndex, itemIndex)
+          : (<></>)}
+        {item.kind === 'PLUG'
+          ? (<h3>Prise 2P + T</h3>)
+          : (<></>)}
       </div>
-      <div>
-        {renderSelectByItemKind(dispatch, item, rowIndex, itemIndex)}
-      </div>
-      { renderCircuitBreakerSpecification(dispatch, item, rowIndex, itemIndex)}
     </>
   );
 }
 
-function renderCircuitBreakerSpecification(
+function renderDifferentialContent(
   dispatch: Dispatcher<Msg>,
-  item: PanelItem,
+  item: Differential,
   rowIndex: number,
   itemIndex: number
 ) {
-  if (item.kind === 'CIRCUIT_BREAKER') {
-    return (
-      <div>
-        <RadioButtonGroup
-          name="Specific"
-          valueSelected={item.isSpecific.map((s) => s as string).withDefault('')}
-          onChange={(v) => dispatch({
-            kind: 'updateItem',
-            item: {
-              ...item,
-              isSpecific: v === '' ? nothing : just(v as CircuitBreakerSpecific),
-            },
-            itemIndex,
-            rowIndex
-          })}
-        >
-          <RadioButton
-            checked={item.isSpecific.map((s) => s === 'HEATING').withDefault(false)}
-            value="HEATING"
-            labelText="Chauffage"
-          />
-          <RadioButton
-            checked={item.isSpecific.map((s) => s === 'WATER_HEATER').withDefault(false)}
-            value="WATER_HEATER"
-            labelText="Chauffe eau"
-          />
-          <RadioButton
-            checked={item.isSpecific.isNothing()}
-            value=""
-            labelText="Autre"
-          />
-        </RadioButtonGroup>
-      </div>
-    );
-  }
-  return (<></>);
+  return (
+    <>
+      <h3>Differentiel</h3>
+      <Select
+        id="right-panel-power-edit"
+        onChange={(evt) => dispatch({
+          kind: 'updateItem',
+          item: {
+            ...item,
+            value: Number.parseInt(evt.target.value, 10) as DifferentialSize
+          },
+          rowIndex,
+          itemIndex
+        })}
+      >
+        {[40, 63].map((v) => (<SelectItem selected={v === item.value} text={`${v}A`} value={v} />))}
+      </Select>
+    </>
+  );
 }
 
-function renderSidePanelItemInputOrTitle(
+function renderCircuitBreakerContent(
   dispatch: Dispatcher<Msg>,
-  item: PanelItem,
+  item: CircuitBreaker,
   editItemName: Maybe<string>,
   rowIndex: number,
   itemIndex: number
 ) {
-  if (item.kind === 'CIRCUIT_BREAKER') {
-    return (
+  return (
+    <>
       <TextInput
         id="right-panel-name-edit"
         labelText="Edit name"
@@ -151,60 +139,65 @@ function renderSidePanelItemInputOrTitle(
           itemIndex
         })}
       />
-    );
-  }
-  return (
-    <h3>Differentiel</h3>
+
+      <Select
+        id="right-panel-power-edit"
+        onChange={(evt) => dispatch({
+          kind: 'updateItem',
+          item: {
+            ...item,
+            value: Number.parseInt(evt.target.value, 10) as CircuitBreakerSize
+          },
+          rowIndex,
+          itemIndex
+        })}
+      >
+        {[10, 16, 20, 32].map((v) => (<SelectItem selected={v === item.value} text={`${v}A`} value={v} />))}
+      </Select>
+
+      {renderCircuitBreakerSpecification(dispatch, item, rowIndex, itemIndex)}
+    </>
+
   );
 }
 
-function renderSelectByItemKind(
+function renderCircuitBreakerSpecification(
   dispatch: Dispatcher<Msg>,
-  item: PanelItem,
+  item: CircuitBreaker,
   rowIndex: number,
   itemIndex: number
 ) {
-  switch (item.kind) {
-    case 'NONE':
-      break;
-    case 'DIFFERENTIAL': {
-      console.log(item.value);
-      return (
-        <Select
-          id="right-panel-power-edit"
-          value={item.value}
-          onChange={(evt) => dispatch({
-            kind: 'updateItem',
-            item: {
-              ...item,
-              value: Number.parseInt(evt.target.value, 10) as DifferentialSize
-            },
-            rowIndex,
-            itemIndex
-          })}
-        >
-          {[40, 63].map((v) => (<SelectItem text={`${v}A`} value={v} />))}
-        </Select>
-      );
-    }
-
-    case 'CIRCUIT_BREAKER':
-      return (
-        <Select
-          id="right-panel-power-edit"
-          value={item.value}
-          onChange={(evt) => dispatch({
-            kind: 'updateItem',
-            item: {
-              ...item,
-              value: Number.parseInt(evt.target.value, 10) as CircuitBreakerSize
-            },
-            rowIndex,
-            itemIndex
-          })}
-        >
-          {[10, 20, 32].map((v) => (<SelectItem text={`${v}A`} value={v} />))}
-        </Select>
-      );
-  }
+  return (
+    <div>
+      <RadioButtonGroup
+        name="Specific"
+        valueSelected={item.isSpecific.map((s) => s as string).withDefault('')}
+        onChange={(v) => dispatch({
+          kind: 'updateItem',
+          item: {
+            ...item,
+            isSpecific: v === '' ? nothing : just(v as CircuitBreakerSpecific),
+          },
+          itemIndex,
+          rowIndex
+        })}
+      >
+        <RadioButton
+          checked={item.isSpecific.map((s) => s === 'HEATING').withDefault(false)}
+          value="HEATING"
+          labelText="Chauffage"
+        />
+        <RadioButton
+          checked={item.isSpecific.map((s) => s === 'WATER_HEATER').withDefault(false)}
+          value="WATER_HEATER"
+          labelText="Chauffe eau"
+        />
+        <RadioButton
+          checked={item.isSpecific.isNothing()}
+          value=""
+          labelText="Autre"
+        />
+      </RadioButtonGroup>
+    </div>
+  );
 }

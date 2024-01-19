@@ -12,16 +12,21 @@ export interface PanelRow {
   items: PanelItem[]
 }
 
-export type CircuitBreakerSize = 10 | 20 | 32
+export type CircuitBreakerSize = 10 | 16 | 20 | 32
 export type DifferentialSize = 40 | 63
 
-export type PanelItem = Differential | CircuitBreaker | None
+export type PanelItem = Differential | CircuitBreaker | Plug | None
 export type DifferentialType = 'A' | 'AC'
 export type CircuitBreakerSpecific = 'HEATING' | 'WATER_HEATER'
 
 export interface None {
   kind: 'NONE'
   size: 1
+}
+
+export interface Plug {
+  kind: 'PLUG'
+  size: 2
 }
 
 export interface Differential {
@@ -42,6 +47,11 @@ export interface CircuitBreaker {
 export const NONE: None = {
   kind: 'NONE',
   size: 1
+};
+
+export const PLUG: Plug = {
+  kind: 'PLUG',
+  size: 2
 };
 
 export interface ErrorMsg {

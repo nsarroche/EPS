@@ -60,15 +60,25 @@ $carbon--theme: $carbon--theme--g10;
   .panel-row {
     display: flex;
     flex-direction: row;
+    justify-content: center;
+    background-color: white;
+    border: 1px solid gray;
 
-    .differential-wrapper {
+    .wide-cell {
       display: flex;
-      flex-basis: 8rem !important;
+      flex-basis: calc(8rem + 6px) !important;
+
+      .differential-type {
+        height: $spacing-07;
+        display: flex;
+        align-items: center;
+        align-self: center;
+      }
     }
 
     .panel-cell {
       flex-direction: column;
-      background-color: antiquewhite;
+      background-color: $ui-03;
       flex-wrap: wrap;
       align-content: center;
       display: flex;
@@ -77,12 +87,12 @@ $carbon--theme: $carbon--theme--g10;
       flex-basis: 4rem;
       height: 150px;
       color: black;
-      margin-right: 6px;
-      margin-bottom: 6px;
+      margin: 6px 6px 6px 0;
       padding-top: 16px;
 
       &.selected-cell {
         outline: 2px solid $interactive;
+        background-color: $active-ui;
       }
 
       .cds--overflow-menu__wrapper {
@@ -96,10 +106,10 @@ $carbon--theme: $carbon--theme--g10;
       }
 
       &.error-cell {
-        border: 1px solid $text-error;
+        border: 2px solid $text-error;
       }
 
-      .panel-cell-empty-name {
+      .panel-cell-icon-wrapper {
         height: $spacing-07;
       }
 

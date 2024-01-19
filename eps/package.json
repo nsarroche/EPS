@@ -17,10 +17,11 @@
     "@types/carbon__icons-react": "10.31.2",
     "@types/carbon-components-react": "7.55.5",
     "@types/jest": "27.5.2",
-    "@types/node": "^16.18.69",
+    "@types/node": "16.18.69",
     "@types/react": "16.14.50",
     "@types/react-dom": "16.9.21",
     "@types/react-json-pretty": "1.7.0",
+    "@testing-library/jest-dom": "5.17.0",
     "carbon-components": "10.58.12",
     "carbon-icons": "7.0.7",
     "eslint": "8.52.0",
@@ -29,11 +30,11 @@
     "eslint-plugin-jsx-a11y": "6.7.1",
     "eslint-plugin-react": "7.33.2",
     "eslint-plugin-unused-imports": "2.0.0",
-    "gh-pages": "^6.1.1",
-    "rc-menu": "^9.12.4",
-    "react-tea-cup": "^2.2.3",
+    "gh-pages": "6.1.1",
+    "rc-menu": "9.12.4",
+    "react-tea-cup": "2.2.3",
     "sass": "1.69.5",
-    "tea-cup-core": "^2.2.3"
+    "tea-cup-core": "2.2.3"
   },
   "scripts": {
     "predeploy": "npm run build",

@@ -12,11 +12,12 @@ import {
   CircuitBreakerSize,
   DifferentialSize,
   DifferentialType, ErrorMsg,
-  Model,
-  PanelItem
+  Model, NONE,
+  PanelItem, PLUG
 } from './Model';
 import { initState, Msg, update } from './Update';
 import { DisplaySidePanel } from './SidePanel/SidePanelView';
+import { heatingSvg, plugSvg, waterHeaterSvg } from './Icons';
 
 function view(dispatch:Dispatcher<Msg>, model: Model) {
   return (
@@ -42,7 +43,12 @@ function DisplayPanel(
     <div className="panel-wrapper">
       {
         model.panelRows.map((row, rowIndex) => (
-          <div className="panel-row" style={{ width: model.panelWidth * (64 + 10) }}>
+          <div
+            // eslint-disable-next-line react/no-array-index-key
+            key={`row_${rowIndex}`}
+            className="panel-row"
+            style={{ width: model.panelWidth * (64 + 10) }}
+          >
             {
               row.items.map((r, itemIndex) => DisplayRowItem(r, rowIndex, itemIndex, model, dispatch))
             }
@@ -76,13 +82,14 @@ function defaultCircuitBreaker(value: CircuitBreakerSize): PanelItem {
 function addItem(
   rowIndex: number,
   itemIndex: number,
-  itemKind: 'CIRCUIT_BREAKER'|'DIFFERENTIAL',
-  value: number,
+  itemKind: 'CIRCUIT_BREAKER'|'DIFFERENTIAL'|'PLUG',
+  value: DifferentialSize | CircuitBreakerSize,
   diffType?: DifferentialType
 ): Msg {
-  const item: PanelItem = itemKind === 'CIRCUIT_BREAKER'
-    ? defaultCircuitBreaker(value as CircuitBreakerSize)
-    : defaultDifferential(value as DifferentialSize, diffType || 'A');
+  let item: PanelItem = NONE;
+  if (itemKind === 'CIRCUIT_BREAKER') item = defaultCircuitBreaker(value as CircuitBreakerSize);
+  if (itemKind === 'DIFFERENTIAL') item = defaultDifferential(value as DifferentialSize, diffType || 'A');
+  if (itemKind === 'PLUG') item = PLUG;
   return {
     kind: 'updateItem',
     item,
@@ -99,11 +106,14 @@ function DisplayRowItem(
   dispatch: Dispatcher<Msg>
 ) {
   const isSelected = model.rightPanelState.rowIndex === rowIndex && model.rightPanelState.itemIndex === itemIndex;
+  function canAddSizeTwo() {
+    return model.panelRows[rowIndex].items[itemIndex - 1].kind === 'NONE' || model.panelRows[rowIndex].items[itemIndex + 1].kind === 'NONE';
+  }
   if (panelItem.kind === 'DIFFERENTIAL') {
     const e = findError(model.errorMsgs, rowIndex, itemIndex);
     return (
-      <div className={`panel-cell differential-wrapper ${e ? 'error-cell' : ''} ${isSelected ? 'selected-cell' : ''}`}>
-        <div>{panelItem.type}</div>
+      <div className={`panel-cell wide-cell ${e ? 'error-cell' : ''} ${isSelected ? 'selected-cell' : ''}`}>
+        <div className="differential-type">{panelItem.type}</div>
         <div>
           {panelItem.value}
           A
@@ -117,7 +127,7 @@ function DisplayRowItem(
     const e = findError(model.errorMsgs, rowIndex, itemIndex);
     return (
       <div className={`panel-cell ${e ? 'error-cell' : ''} ${isSelected ? 'selected-cell' : ''}`}>
-        <div className="panel-cell-empty-name" />
+        {renderIcon(panelItem)}
         <div>
           {panelItem.value}
           A
@@ -127,23 +137,65 @@ function DisplayRowItem(
       </div>
     );
   }
+  if (panelItem.kind === 'PLUG') {
+    return (
+      <div className={`panel-cell wide-cell ${isSelected ? 'selected-cell' : ''}`}>
+        {renderIcon(panelItem)}
+        <div>Prise</div>
+        {renderOpenSidePanelButton(dispatch, panelItem, rowIndex, itemIndex)}
+      </div>
+    );
+  }
   return (
     <div className="panel-cell">
       <OverflowMenu
         className="overflow-menu-wrapper"
         renderIcon={Add16}
-        iconDescription="ADD"
+        iconDescription="Ajouter"
       >
-        <OverflowMenuItem itemText="Diff A 40A" onClick={() => dispatch(addItem(rowIndex, itemIndex, 'DIFFERENTIAL', 40, 'A'))} />
-        <OverflowMenuItem itemText="Diff A 63A" onClick={() => dispatch(addItem(rowIndex, itemIndex, 'DIFFERENTIAL', 63, 'A'))} />
-        <OverflowMenuItem itemText="Diff AC 40A" onClick={() => dispatch(addItem(rowIndex, itemIndex, 'DIFFERENTIAL', 40, 'AC'))} />
-        <OverflowMenuItem itemText="Diff AC 63A" onClick={() => dispatch(addItem(rowIndex, itemIndex, 'DIFFERENTIAL', 63, 'AC'))} />
-        <OverflowMenuItem itemText="Disj 16A" onClick={() => dispatch(addItem(rowIndex, itemIndex, 'CIRCUIT_BREAKER', 16))} />
-        <OverflowMenuItem itemText="Disj 20A" onClick={() => dispatch(addItem(rowIndex, itemIndex, 'CIRCUIT_BREAKER', 20))} />
-        <OverflowMenuItem itemText="Disj 32A" onClick={() => dispatch(addItem(rowIndex, itemIndex, 'CIRCUIT_BREAKER', 32))} />
+        {
+          // enough space to add the differential
+          canAddSizeTwo()
+            ? (
+              <OverflowMenuItem
+                itemText="Differentiel"
+                onClick={() => dispatch(addItem(rowIndex, itemIndex, 'DIFFERENTIAL', 40, 'A'))}
+              />
+            ) : (<></>)
+        }
+        <OverflowMenuItem
+          itemText="Disjoncteur"
+          onClick={() => dispatch(addItem(rowIndex, itemIndex, 'CIRCUIT_BREAKER', 10))}
+        />
+        {
+          // enough space to add the differential
+          canAddSizeTwo()
+            ? (
+              <OverflowMenuItem
+                itemText="Prise"
+                onClick={() => dispatch(addItem(rowIndex, itemIndex, 'PLUG', 40, 'A'))}
+              />
+            ) : (<></>)
+        }
       </OverflowMenu>
     </div>
   );
+}
+
+function renderIcon(item: PanelItem) {
+  if (item.kind === 'CIRCUIT_BREAKER') {
+    return (
+      <div className="panel-cell-icon-wrapper">
+        {item.isSpecific.map((t) => (t === 'HEATING' ? heatingSvg() : waterHeaterSvg())).withDefault(<></>)}
+      </div>
+    );
+  }
+  if (item.kind === 'PLUG') {
+    return (
+      <div className="panel-cell-icon-wrapper">{plugSvg()}</div>
+    );
+  }
+  return <div className="panel-cell-icon-wrapper" />;
 }
 
 function renderOpenSidePanelButton(
