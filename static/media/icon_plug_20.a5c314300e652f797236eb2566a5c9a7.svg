@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20px" height="20px" viewBox="0 0 20 20" version="1.1">
+<g id="surface1">
+<path style="fill:none;stroke-width:10;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:4;" d="M 155 80 C 155 38.59375 121.40625 5 80 5 C 38.59375 5 5 38.59375 5 80 C 5 121.40625 38.59375 155 80 155 C 121.40625 155 155 121.40625 155 80 Z M 155 80 " transform="matrix(0.125,0,0,0.125,0,0)"/>
+<path style="fill:none;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:4;" d="M 55 85 C 55 79.46875 50.53125 75 45 75 C 39.46875 75 35 79.46875 35 85 C 35 90.53125 39.46875 95 45 95 C 50.53125 95 55 90.53125 55 85 Z M 55 85 " transform="matrix(0.125,0,0,0.125,0,0)"/>
+<path style="fill:none;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:4;" d="M 125 85 C 125 79.46875 120.53125 75 115 75 C 109.46875 75 105 79.46875 105 85 C 105 90.53125 109.46875 95 115 95 C 120.53125 95 125 90.53125 125 85 Z M 125 85 " transform="matrix(0.125,0,0,0.125,0,0)"/>
+<path style="fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;stroke-width:10;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:4;" d="M 85 45 C 85 42.25 82.75 40 80 40 C 77.25 40 75 42.25 75 45 C 75 47.75 77.25 50 80 50 C 82.75 50 85 47.75 85 45 Z M 85 45 " transform="matrix(0.125,0,0,0.125,0,0)"/>
+</g>
+</svg>

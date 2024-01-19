@@ -1,13 +1,16 @@
 {
   "files": {
-    "main.css": "/EPS/static/css/main.975898e7.css",
-    "main.js": "/EPS/static/js/main.314486a4.js",
+    "main.css": "/EPS/static/css/main.e6a71d2b.css",
+    "main.js": "/EPS/static/js/main.0cc9b7c0.js",
+    "static/media/icon_water-heater_20.svg": "/EPS/static/media/icon_water-heater_20.ef63e9733ee7935770abe517714cd865.svg",
+    "static/media/icon_heating_20.svg": "/EPS/static/media/icon_heating_20.5ef86c1f9ba8c867091f3a6b24dce05e.svg",
+    "static/media/icon_plug_20.svg": "/EPS/static/media/icon_plug_20.a5c314300e652f797236eb2566a5c9a7.svg",
     "index.html": "/EPS/index.html",
-    "main.975898e7.css.map": "/EPS/static/css/main.975898e7.css.map",
-    "main.314486a4.js.map": "/EPS/static/js/main.314486a4.js.map"
+    "main.e6a71d2b.css.map": "/EPS/static/css/main.e6a71d2b.css.map",
+    "main.0cc9b7c0.js.map": "/EPS/static/js/main.0cc9b7c0.js.map"
   },
   "entrypoints": [
-    "static/css/main.975898e7.css",
-    "static/js/main.314486a4.js"
+    "static/css/main.e6a71d2b.css",
+    "static/js/main.0cc9b7c0.js"
   ]
 }
