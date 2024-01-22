@@ -7,7 +7,9 @@ import {
 import {
   Button, ContentSwitcher, OverflowMenu, OverflowMenuItem, Switch, TextInput, TooltipIcon
 } from 'carbon-components-react';
-import { Add16, Edit16, Warning16 } from '@carbon/icons-react';
+import {
+  Add16, ArrowLeft16, ArrowRight16, Edit16, Warning16
+} from '@carbon/icons-react';
 import {
   CircuitBreakerSize,
   DifferentialSize,
@@ -19,6 +21,31 @@ import { initState, Msg, update } from './Update';
 import { DisplaySidePanel } from './SidePanel/SidePanelView';
 import { heatingSvg, plugSvg, waterHeaterSvg } from './Icons';
 
+function renderUndoRedoBtns(dispatch: Dispatcher<Msg>, model: Model) {
+  return (
+    <div>
+      <Button
+        hasIconOnly
+        iconDescription="Annuler"
+        disabled={model.undoStack.length === 0}
+        onClick={() => dispatch({ kind: 'undo' })}
+        kind="ghost"
+      >
+        <ArrowLeft16 />
+      </Button>
+      <Button
+        hasIconOnly
+        iconDescription="Refaire"
+        disabled={model.redoStack.length === 0}
+        onClick={() => dispatch({ kind: 'redo' })}
+        kind="ghost"
+      >
+        <ArrowRight16 />
+      </Button>
+    </div>
+  );
+}
+
 function view(dispatch:Dispatcher<Msg>, model: Model) {
   return (
     <div className="App">
@@ -26,6 +53,7 @@ function view(dispatch:Dispatcher<Msg>, model: Model) {
         <h2>Electric Panel Simulator</h2>
       </header>
       <div className="panel-config-row">
+        {renderUndoRedoBtns(dispatch, model)}
         {DisplayRowCounter(dispatch, model)}
         {DisplayRowWidth(dispatch, model)}
       </div>
@@ -40,14 +68,14 @@ function DisplayPanel(
   model: Model
 ) {
   return (
-    <div className="panel-wrapper">
+    <div className="panel-wrapper" key={`panel-${model.undoStack.length}-${model.redoStack.length}`}>
       {
-        model.panelRows.map((row, rowIndex) => (
+        model.panel.panelRows.map((row, rowIndex) => (
           <div
             // eslint-disable-next-line react/no-array-index-key
             key={`row_${rowIndex}`}
             className="panel-row"
-            style={{ width: model.panelWidth * (64 + 10) }}
+            style={{ width: model.panel.panelWidth * (64 + 10) }}
           >
             {
               row.items.map((r, itemIndex) => DisplayRowItem(r, rowIndex, itemIndex, model, dispatch))
@@ -105,18 +133,18 @@ function DisplayRowItem(
   model: Model,
   dispatch: Dispatcher<Msg>
 ) {
-  const isSelected = model.rightPanelState.rowIndex === rowIndex && model.rightPanelState.itemIndex === itemIndex;
+  const isSelected = model.panel.rightPanelState.rowIndex === rowIndex
+      && model.panel.rightPanelState.itemIndex === itemIndex;
   function canAddSizeTwo() {
-    return model.panelRows[rowIndex].items[itemIndex - 1].kind === 'NONE' || model.panelRows[rowIndex].items[itemIndex + 1].kind === 'NONE';
+    return model.panel.panelRows[rowIndex].items[itemIndex - 1].kind === 'NONE' || model.panel.panelRows[rowIndex].items[itemIndex + 1].kind === 'NONE';
   }
   if (panelItem.kind === 'DIFFERENTIAL') {
-    const e = findError(model.errorMsgs, rowIndex, itemIndex);
+    const e = findError(model.panel.errorMsgs, rowIndex, itemIndex);
     return (
       <div className={`panel-cell wide-cell ${e ? 'error-cell' : ''} ${isSelected ? 'selected-cell' : ''}`}>
         <div className="differential-type">{panelItem.type}</div>
         <div>
-          {panelItem.value}
-          A
+          {`${panelItem.value}A`}
         </div>
         {renderOpenSidePanelButton(dispatch, panelItem, rowIndex, itemIndex)}
         {renderErrorMsg(e)}
@@ -124,7 +152,7 @@ function DisplayRowItem(
     );
   }
   if (panelItem.kind === 'CIRCUIT_BREAKER') {
-    const e = findError(model.errorMsgs, rowIndex, itemIndex);
+    const e = findError(model.panel.errorMsgs, rowIndex, itemIndex);
     return (
       <div className={`panel-cell ${e ? 'error-cell' : ''} ${isSelected ? 'selected-cell' : ''}`}>
         {renderIcon(panelItem)}
@@ -248,7 +276,7 @@ function DisplayRowCounter(dispatch:Dispatcher<Msg>, model: Model) {
   return (
     <div className="panel-config-height-input-wrapper">
       <TextInput
-        value={model.panelRows.length}
+        value={model.panel.panelRows.length}
         type="number"
         min={1}
         max={5}
@@ -265,7 +293,7 @@ function DisplayRowWidth(dispatch:Dispatcher<Msg>, model: Model) {
     <div className="panel-width-content-switcher-wrapper">
       <ContentSwitcher
         onChange={(v) => dispatch({ kind: 'updateWidth', size: (v.name as number) })}
-        selectedIndex={model.panelWidth === 13 ? 0 : 1}
+        selectedIndex={model.panel.panelWidth === 13 ? 0 : 1}
       >
         <Switch
           name="13"

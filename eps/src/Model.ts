@@ -2,14 +2,20 @@ import { Maybe } from 'tea-cup-core';
 import { PanelState } from './SidePanel/SidePanelModel';
 
 export interface Model {
-  panelRows: PanelRow[]
-  panelWidth: number
-  rightPanelState: PanelState
-  errorMsgs: ErrorMsg[]
+  readonly panel: Panel
+  readonly undoStack: Panel[]
+  readonly redoStack: Panel[]
+}
+
+export interface Panel {
+  readonly panelRows: PanelRow[]
+  readonly panelWidth: number
+  readonly rightPanelState: PanelState
+  readonly errorMsgs: ErrorMsg[]
 }
 
 export interface PanelRow {
-  items: PanelItem[]
+  readonly items: PanelItem[]
 }
 
 export type CircuitBreakerSize = 10 | 16 | 20 | 32
@@ -20,28 +26,28 @@ export type DifferentialType = 'A' | 'AC'
 export type CircuitBreakerSpecific = 'HEATING' | 'WATER_HEATER'
 
 export interface None {
-  kind: 'NONE'
-  size: 1
+  readonly kind: 'NONE'
+  readonly size: 1
 }
 
 export interface Plug {
-  kind: 'PLUG'
-  size: 2
+  readonly kind: 'PLUG'
+  readonly size: 2
 }
 
 export interface Differential {
-  kind: 'DIFFERENTIAL'
-  value: DifferentialSize
-  type: DifferentialType
-  size: 2
+  readonly kind: 'DIFFERENTIAL'
+  readonly value: DifferentialSize
+  readonly type: DifferentialType
+  readonly size: 2
 }
 
 export interface CircuitBreaker {
-  kind: 'CIRCUIT_BREAKER'
-  value: CircuitBreakerSize
-  name: string
-  size: 1
-  isSpecific: Maybe<CircuitBreakerSpecific>
+  readonly kind: 'CIRCUIT_BREAKER'
+  readonly value: CircuitBreakerSize
+  readonly name: string
+  readonly size: 1
+  readonly isSpecific: Maybe<CircuitBreakerSpecific>
 }
 
 export const NONE: None = {
@@ -55,7 +61,7 @@ export const PLUG: Plug = {
 };
 
 export interface ErrorMsg {
-  message: string
-  rowIndex: number
-  itemIndex: number
+  readonly message: string
+  readonly rowIndex: number
+  readonly itemIndex: number
 }

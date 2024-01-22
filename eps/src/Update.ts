@@ -4,25 +4,24 @@ import {
 import {
   CircuitBreaker,
   ErrorMsg,
-  Model, NONE, PanelItem, PanelRow
+  Model, NONE, Panel, PanelItem, PanelRow
 } from './Model';
 import { PanelState } from './SidePanel/SidePanelModel';
 
 // todo
-// - update panel properly
 // - recap
 // - validation
-// - undo / redo
 // - import / export
 // - print
 
 export type Msg
-    = { kind: 'NoOp' }
-    | { kind: 'updateWidth', size: number}
+    = { kind: 'updateWidth', size: number}
     | { kind: 'updateHeight', size: number}
     | { kind: 'updateItem', item: PanelItem, rowIndex: number, itemIndex: number}
     | { kind: 'openOrClosePanel', item: Maybe<PanelItem>, rowIndex: number, itemIndex: number}
     | { kind: 'updatePanelState', item: Maybe<PanelItem>, editItemName: Maybe<string>, rowIndex: number, itemIndex: number}
+    | { kind: 'undo' }
+    | { kind: 'redo' }
 
 function emptyRow(size: 13|18): PanelRow {
   return {
@@ -43,100 +42,170 @@ export const defaultRightPanelState: PanelState = {
 };
 
 export function initState(): [Model, Cmd<Msg>] {
-  const model: Model = {
+  const panel: Panel = {
     panelRows: [emptyRow(13)],
     panelWidth: 13,
     rightPanelState: defaultRightPanelState,
-    errorMsgs: []
+    errorMsgs: [],
+  };
+  const model: Model = {
+    panel,
+    undoStack: [],
+    redoStack: []
   };
   return [model, Cmd.none() as Cmd<Msg>];
 }
 
 export function update(msg: Msg, model: Model) : [Model, Cmd<Msg>] {
   switch (msg.kind) {
-    case 'NoOp': return [model, Cmd.none()];
     case 'updateWidth': {
       // decrease width
-      if (msg.size < model.panelWidth) {
+      if (msg.size < model.panel.panelWidth) {
         return noCmd({
           ...model,
-          panelRows: model.panelRows.map((r) => {
-            let sum = 0;
-            return ({
-              ...r,
-              items: r.items.slice(1).reduce((prev, cur) => {
-                // eslint-disable-next-line no-cond-assign
-                if ((sum += cur.size) < msg.size - 1) {
-                  prev.push(cur);
-                }
-                return prev;
-              }, [r.items[0]] as PanelItem[])
-            });
-          }),
-          panelWidth: msg.size
+          panel: {
+            ...model.panel,
+            panelRows: model.panel.panelRows.map((r) => {
+              let sum = 0;
+              return ({
+                ...r,
+                items: r.items.slice(1).reduce((prev, cur) => {
+                  // eslint-disable-next-line no-cond-assign
+                  if ((sum += cur.size) < msg.size - 1) {
+                    prev.push(cur);
+                  }
+                  return prev;
+                }, [r.items[0]] as PanelItem[])
+              });
+            }),
+            panelWidth: msg.size,
+          },
+          undoStack: [...model.undoStack, model.panel],
+          redoStack: []
         });
       }
       // increase width
       return noCmd({
         ...model,
-        panelRows: model.panelRows
-          .map((r) => ({
-            ...r,
-            items: [...r.items, ...Array.from(Array(msg.size - model.panelWidth).keys()).map(() => NONE)]
-          })),
-        panelWidth: msg.size
+        panel: {
+          ...model.panel,
+          panelRows: model.panel.panelRows
+            .map((r) => ({
+              ...r,
+              items: [...r.items, ...Array.from(Array(msg.size - model.panel.panelWidth).keys()).map(() => NONE)]
+            })),
+          panelWidth: msg.size,
+        },
+        undoStack: [...model.undoStack, model.panel],
+        redoStack: []
       });
     }
     case 'updateHeight': {
-      if (model.panelRows.length > msg.size) {
+      if (model.panel.panelRows.length > msg.size) {
         return noCmd({
           ...model,
-          panelRows: model.panelRows.slice(0, msg.size)
+          panel: {
+            ...model.panel,
+            panelRows: model.panel.panelRows.slice(0, msg.size),
+          },
+          undoStack: [...model.undoStack, model.panel],
+          redoStack: []
         });
       }
       return noCmd({
         ...model,
-        panelRows: [
-          ...model.panelRows,
-          ...Array.from(Array(msg.size - model.panelRows.length).keys()).map(() => emptyRow(model.panelWidth as 13|18))
-        ]
+        panel: {
+          ...model.panel,
+          panelRows: [
+            ...model.panel.panelRows,
+            ...Array.from(Array(msg.size - model.panel.panelRows.length).keys())
+              .map(() => emptyRow(model.panel.panelWidth as 13|18))
+          ],
+        },
+        undoStack: [...model.undoStack, model.panel],
+        redoStack: []
       });
     }
     case 'updateItem': {
-      const newRows = replaceItemInRow(model.panelRows, msg.item, msg.rowIndex, msg.itemIndex, model.panelWidth);
+      const newRows = replaceItemInRow(
+        model.panel.panelRows,
+        msg.item,
+        msg.rowIndex,
+        msg.itemIndex,
+        model.panel.panelWidth
+      );
       const errors: ErrorMsg[] = computeErrorMsgs(newRows);
       const shouldCloseSidePanel = msg.item.kind === 'NONE'
-          || newRows[msg.rowIndex].items.length !== model.panelRows[msg.rowIndex].items.length;
+          || newRows[msg.rowIndex].items.length !== model.panel.panelRows[msg.rowIndex].items.length;
       return noCmd({
         ...model,
-        panelRows: newRows,
-        errorMsgs: errors,
-        rightPanelState: shouldCloseSidePanel ? defaultRightPanelState : model.rightPanelState
+        panel: {
+          ...model.panel,
+          panelRows: newRows,
+          errorMsgs: errors,
+          rightPanelState: shouldCloseSidePanel ? defaultRightPanelState : model.panel.rightPanelState,
+        },
+        undoStack: [...model.undoStack, model.panel],
+        redoStack: []
       });
     }
     case 'openOrClosePanel': {
       return noCmd({
         ...model,
-        rightPanelState: {
-          ...model.rightPanelState,
-          rowIndex: msg.rowIndex,
-          itemIndex: msg.itemIndex,
-          panelItem: msg.item,
-          editItemName: msg.item
-            .map((item) => (item.kind === 'CIRCUIT_BREAKER' ? just(item.name) : nothing))
-            .withDefault(nothing)
+        panel: {
+          ...model.panel,
+          rightPanelState: {
+            ...model.panel.rightPanelState,
+            rowIndex: msg.rowIndex,
+            itemIndex: msg.itemIndex,
+            panelItem: msg.item,
+            editItemName: msg.item
+              .map((item) => (item.kind === 'CIRCUIT_BREAKER' ? just(item.name) : nothing))
+              .withDefault(nothing),
+          }
         }
       });
     }
     case 'updatePanelState': {
       return noCmd({
         ...model,
-        rightPanelState: {
-          ...model.rightPanelState,
-          panelItem: msg.item,
-          editItemName: msg.editItemName
-        }
+        panel: {
+          ...model.panel,
+          rightPanelState: {
+            ...model.panel.rightPanelState,
+            panelItem: msg.item,
+            editItemName: msg.editItemName
+          },
+        },
+        undoStack: [...model.undoStack, model.panel],
+        redoStack: []
       });
+    }
+    case 'undo': {
+      const undoStack = [...model.undoStack];
+      const previousPanel = undoStack.pop();
+      if (previousPanel) {
+        return noCmd({
+          ...model,
+          panel: previousPanel,
+          undoStack: model.undoStack.slice(0, -1),
+          redoStack: [...model.redoStack, model.panel]
+        });
+      }
+      return noCmd(model);
+    }
+    case 'redo': {
+      const redoStack = [...model.redoStack];
+      const nextPanel = redoStack.pop();
+      if (nextPanel) {
+        return noCmd({
+          ...model,
+          panel: nextPanel,
+          undoStack: [...model.undoStack, model.panel],
+          redoStack: model.redoStack.slice(0, -1)
+        });
+      }
+      return noCmd(model);
     }
   }
 }
@@ -192,7 +261,7 @@ export function replaceItemInRow(
   return panelRows.map((r, ri) => {
     if (ri === rowIndex) {
       // Replace item at indicated position
-      const items: PanelItem[] = r.items;
+      const items: PanelItem[] = [...r.items];
       if (item.size === 2) { // trying to insert an item with a size of 2
         if (itemIndex && r.items[itemIndex - 1].kind === 'NONE' && r.items[itemIndex].kind === 'NONE') {
           // replace current and previous NONE

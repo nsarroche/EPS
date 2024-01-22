@@ -2,8 +2,8 @@ import { Maybe } from 'tea-cup-core';
 import { PanelItem } from '../Model';
 
 export interface PanelState {
-  panelItem: Maybe<PanelItem>
-  editItemName: Maybe<string>
-  rowIndex: number
-  itemIndex: number
+  readonly panelItem: Maybe<PanelItem>
+  readonly editItemName: Maybe<string>
+  readonly rowIndex: number
+  readonly itemIndex: number
 }

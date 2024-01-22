@@ -63,6 +63,8 @@ $carbon--theme: $carbon--theme--g10;
     justify-content: center;
     background-color: white;
     border: 1px solid gray;
+    border-radius: 5px;
+    margin-bottom: 5px;
 
     .wide-cell {
       display: flex;

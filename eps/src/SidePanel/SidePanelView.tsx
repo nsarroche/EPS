@@ -20,7 +20,7 @@ export function DisplaySidePanel(
 ) {
   return (
     <SidePanel
-      open={model.rightPanelState.panelItem.isJust()}
+      open={model.panel.rightPanelState.panelItem.isJust()}
       onRequestClose={() => dispatch({
         kind: 'openOrClosePanel',
         item: defaultRightPanelState.panelItem,
@@ -30,12 +30,12 @@ export function DisplaySidePanel(
       title="Edition de l'élément"
     >
       {
-        model.rightPanelState.panelItem.map((item: PanelItem) => renderSidePanelItemContent(
+        model.panel.rightPanelState.panelItem.map((item: PanelItem) => renderSidePanelItemContent(
           dispatch,
           item,
-          model.rightPanelState.editItemName,
-          model.rightPanelState.rowIndex,
-          model.rightPanelState.itemIndex
+          model.panel.rightPanelState.editItemName,
+          model.panel.rightPanelState.rowIndex,
+          model.panel.rightPanelState.itemIndex
         ))
           .withDefault(<></>)
       }
